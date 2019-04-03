@@ -18,7 +18,7 @@ const Cell = function() {
   };
   console.log("cell state is ", cellState);
   console.log("cell color is ", color);
-  return <button style={{background: color}} onClick={toggleState} />;
+  return <div className="cell" style={{background: color}} onClick={toggleState} />;
 };
 
 const Row = function() {
