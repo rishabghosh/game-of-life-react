@@ -1,44 +1,13 @@
-import React, { Component, useState } from "react";
-import "./App.css";
+import React, { useEffect, useState } from "react";
+import Cell from "./Cell";
 import nextGeneration from "./golLib.js";
-
-const COLOR = { marked: "black", unmarked: "white" };
-const CURRENT_BOARD = {};
-
-const Cell = function(props) {
-  const [cellState, setCellState] = useState(false);
-  const [color, setCellColor] = useState(COLOR.unmarked);
-
-  const toggleState = () => {
-    setCellState(!cellState);
-    if (color === COLOR.marked) {
-      setCellColor(COLOR.unmarked);
-    } else {
-      setCellColor(COLOR.marked);
-    }
-  };
-
-  CURRENT_BOARD[props.id] = cellState;
-
-  console.log(CURRENT_BOARD[props.id]);
-  console.log("cell state is ", cellState);
-  console.log("cell color is ", color);
-  console.log(CURRENT_BOARD);
-
-  return (
-    <div
-      id={props.id}
-      className="cell"
-      style={{ background: color }}
-      onClick={toggleState}
-    />
-  );
-};
+import "./App.css";
 
 const Row = function(props) {
   const result = [];
   for (let index = 0; index < 10; index++) {
-    result.push(<Cell id={props.id + "_" + index} />);
+    const ID = props.id + "_" + index;
+    result.push(<Cell id={ID} color={COLOURS_OF_CELLS[ID]} />);
   }
   return <div className="row">{result}</div>;
 };
@@ -51,10 +20,50 @@ const Table = function() {
   return <div className="table">{result}</div>;
 };
 
-const App = function() {
+const COLOURS_OF_CELLS = {};
+const genId = cell => cell[0] + "_" + cell[1];
+
+const fillColourOfCells = function(bounds) {
+  const rows = bounds.bottomRight[0] - bounds.topLeft[0];
+  const cellsPerRow = bounds.bottomRight[1] - bounds.topLeft[1];
+  for (let i = 0; i <= rows; i++) {
+    for (let j = 0; j <= cellsPerRow; j++) {
+      const id = genId([i, j]);
+      COLOURS_OF_CELLS[id] = "white";
+    }
+  }
+};
+
+const updateColorOfCells = function(cells) {
+  for (let index = 0; index < cells.length; index++) {
+    const cell = cells[index];
+    const id = genId(cell);
+    COLOURS_OF_CELLS[id] = "black";
+  }
+};
+
+const App = function(props) {
+  const [gen, setGen] = useState(props.gen);
+  const updateGen = function() {
+    const nextGen = nextGeneration(gen, props.bounds);
+    setGen(nextGen);
+  };
+
+  const setUp = function(gen) {
+    fillColourOfCells(props.bounds);
+    updateColorOfCells(gen);
+  };
+
+  const runOnChange = function() {
+    setUp(gen);
+  };
+
+  useEffect(runOnChange);
+
   return (
     <main>
       <Table />
+      <button onClick={updateGen}>update</button>
     </main>
   );
 };
