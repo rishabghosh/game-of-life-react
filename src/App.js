@@ -4,7 +4,12 @@ import nextGeneration from "./golLib.js";
 import "./App.css";
 
 let hasGameYetToStart = true;
-const currentGen = [];
+const INITIAL_GEN = [];
+const COLOURS_OF_CELLS = {};
+const COLOURS = { marked: "black", unmarked: "white" };
+const genId = cell => cell[0] + "_" + cell[1];
+
+
 
 const getCellCoordFromId = function(id) {
   const rowCellPair = id.split("_");
@@ -13,51 +18,35 @@ const getCellCoordFromId = function(id) {
   return [rowNumber, cellNumber];
 };
 
+
+
 const Cell = function(props) {
-  // const [cellState, setCellState] = useState(false);
-  const [cellColor, setCellColor] = useState("white");
-
-  //   const toggleState = () => {
-  //     setCellState(!cellState);
-  //     if (cellColor === COLOR.marked) {
-  //       setCellColor(COLOR.unmarked);
-  //     } else {
-  //       setCellColor(COLOR.marked);
-  //     }
-  //   };
-
-  //   CURRENT_BOARD[props.id] = cellState;
-
-  //   console.log(CURRENT_BOARD[props.id]);
-  //   console.log("cell state is ", cellState);
-  //   console.log("cell color is ", cellColor);
-  //   console.log(CURRENT_BOARD);
+  const [cellColor, setCellColor] = useState(COLOURS.unmarked);
 
   const toggleState = function() {
     if (!hasGameYetToStart) return;
-    console.log("******");
 
-    COLOURS_OF_CELLS[props.id] === "white"
-      ? (COLOURS_OF_CELLS[props.id] = "black")
-      : (COLOURS_OF_CELLS[props.id] = "white");
+    COLOURS_OF_CELLS[props.id] === COLOURS.unmarked
+      ? (COLOURS_OF_CELLS[props.id] = COLOURS.marked)
+      : (COLOURS_OF_CELLS[props.id] = COLOURS.unmarked);
 
-    cellColor === "white" ? setCellColor("black") : setCellColor("white");
+    cellColor === COLOURS.unmarked
+      ? setCellColor(COLOURS.marked)
+      : setCellColor(COLOURS.unmarked);
     const id = getCellCoordFromId(props.id);
-    currentGen.push(id);
+    INITIAL_GEN.push(id);
   };
 
-  let backgroundColor;
+  let backgroundColor = props.color;
   if (hasGameYetToStart) {
     backgroundColor = cellColor;
-  } else {
-    backgroundColor = props.color;
   }
 
   return (
     <div
       id={props.id}
       className="cell"
-      style={{ background: backgroundColor}}
+      style={{ background: backgroundColor }}
       onClick={toggleState}
     />
   );
@@ -80,16 +69,13 @@ const Table = function() {
   return <div className="table">{result}</div>;
 };
 
-const COLOURS_OF_CELLS = {};
-const genId = cell => cell[0] + "_" + cell[1];
-
 const fillColourOfCells = function(bounds) {
   const rows = bounds.bottomRight[0] - bounds.topLeft[0];
   const cellsPerRow = bounds.bottomRight[1] - bounds.topLeft[1];
   for (let i = 0; i <= rows; i++) {
     for (let j = 0; j <= cellsPerRow; j++) {
       const id = genId([i, j]);
-      COLOURS_OF_CELLS[id] = "white";
+      COLOURS_OF_CELLS[id] = COLOURS.unmarked;
     }
   }
 };
@@ -98,12 +84,12 @@ const updateColorOfCells = function(cells) {
   for (let index = 0; index < cells.length; index++) {
     const cell = cells[index];
     const id = genId(cell);
-    COLOURS_OF_CELLS[id] = "black";
+    COLOURS_OF_CELLS[id] = COLOURS.marked;
   }
 };
 
 const App = function(props) {
-  const [gen, setGen] = useState(currentGen);
+  const [gen, setGen] = useState(INITIAL_GEN);
   const updateGen = function() {
     console.log("updating gen");
     const nextGen = nextGeneration(gen, props.bounds);
