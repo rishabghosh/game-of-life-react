@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import nextGeneration from "./golLib.js";
 import "./App.css";
 
-let hasGameYetToStart = true;
 const INITIAL_GEN = [];
 const COLOURS_OF_CELLS = {};
 const COLOURS = { marked: "black", unmarked: "white" };
@@ -20,7 +19,7 @@ const Cell = function(props) {
   const [cellColor, setCellColor] = useState(COLOURS.unmarked);
 
   const toggleState = function() {
-    if (!hasGameYetToStart) return;
+    if (props.hasStarted) return;
 
     COLOURS_OF_CELLS[props.id] === COLOURS.unmarked
       ? (COLOURS_OF_CELLS[props.id] = COLOURS.marked)
@@ -34,7 +33,7 @@ const Cell = function(props) {
   };
 
   let backgroundColor = props.color;
-  if (hasGameYetToStart) {
+  if (!props.hasStarted) {
     backgroundColor = cellColor;
   }
 
@@ -52,15 +51,21 @@ const Row = function(props) {
   const result = [];
   for (let index = 0; index < 10; index++) {
     const ID = props.id + "_" + index;
-    result.push(<Cell id={ID} color={COLOURS_OF_CELLS[ID]} />);
+    result.push(
+      <Cell
+        id={ID}
+        color={COLOURS_OF_CELLS[ID]}
+        hasStarted={props.hasStarted}
+      />
+    );
   }
   return <div className="row">{result}</div>;
 };
 
-const Table = function() {
+const Table = function(props) {
   const result = [];
   for (let index = 0; index < 10; index++) {
-    result.push(<Row id={index} />);
+    result.push(<Row id={index} hasStarted={props.hasStarted} />);
   }
   return <div className="table">{result}</div>;
 };
@@ -84,41 +89,54 @@ const updateColorOfCells = function(cells) {
   }
 };
 
+const resetColorOfCells = function() {
+  const allIds = Object.keys(COLOURS_OF_CELLS);
+  allIds.forEach(id => {
+    COLOURS_OF_CELLS[id] = COLOURS.unmarked;
+  });
+};
+
 const App = function(props) {
   const [gen, setGen] = useState(INITIAL_GEN);
   const [hasStarted, setHasStarted] = useState(false);
 
-  const updateGen = function() {
-    const nextGen = nextGeneration(gen, props.bounds);
-    setGen(nextGen);
-  };
-
   const runOnChange = function() {
+    console.log("running", hasStarted);
+
     let intervalId;
     if (hasStarted) {
       intervalId = setInterval(() => {
+        console.log("getting invoked");
         setGen(prevGen => nextGeneration(prevGen, props.bounds));
       }, 500);
     }
-    fillColourOfCells(props.bounds);
-    updateColorOfCells(gen);
 
     return () => {
+      console.log("interval got cleared", hasStarted);
       clearInterval(intervalId);
-      hasGameYetToStart = false;
     };
   };
 
-  useEffect(runOnChange);
+  useEffect(() => {
+    if (!hasStarted) fillColourOfCells(props.bounds);
+  });
+
+  useEffect(runOnChange, [hasStarted]);
+
+  useEffect(() => {
+    updateColorOfCells(gen);
+    return () => {
+      resetColorOfCells();
+    };
+  });
 
   const start = function() {
     setHasStarted(true);
-    hasGameYetToStart = false;
   };
 
   return (
     <main>
-      <Table />
+      <Table hasStarted={hasStarted} />
       <button onClick={start}>Start</button>
     </main>
   );
