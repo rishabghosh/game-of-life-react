@@ -9,16 +9,12 @@ const COLOURS_OF_CELLS = {};
 const COLOURS = { marked: "black", unmarked: "white" };
 const genId = cell => cell[0] + "_" + cell[1];
 
-
-
 const getCellCoordFromId = function(id) {
   const rowCellPair = id.split("_");
   const rowNumber = +rowCellPair[0];
   const cellNumber = +rowCellPair[1];
   return [rowNumber, cellNumber];
 };
-
-
 
 const Cell = function(props) {
   const [cellColor, setCellColor] = useState(COLOURS.unmarked);
@@ -90,32 +86,40 @@ const updateColorOfCells = function(cells) {
 
 const App = function(props) {
   const [gen, setGen] = useState(INITIAL_GEN);
+  const [hasStarted, setHasStarted] = useState(false);
+
   const updateGen = function() {
-    console.log("updating gen");
     const nextGen = nextGeneration(gen, props.bounds);
     setGen(nextGen);
   };
 
-  const setUp = function(gen) {
+  const runOnChange = function() {
+    let intervalId;
+    if (hasStarted) {
+      intervalId = setInterval(() => {
+        setGen(prevGen => nextGeneration(prevGen, props.bounds));
+      }, 500);
+    }
     fillColourOfCells(props.bounds);
     updateColorOfCells(gen);
-  };
 
-  const tearDown = () => {
-    hasGameYetToStart = false;
-  };
-
-  const runOnChange = function() {
-    setUp(gen);
-    return () => tearDown();
+    return () => {
+      clearInterval(intervalId);
+      hasGameYetToStart = false;
+    };
   };
 
   useEffect(runOnChange);
 
+  const start = function() {
+    setHasStarted(true);
+    hasGameYetToStart = false;
+  };
+
   return (
     <main>
       <Table />
-      <button onClick={updateGen}>update</button>
+      <button onClick={start}>Start</button>
     </main>
   );
 };
