@@ -1,7 +1,67 @@
 import React, { useEffect, useState } from "react";
-import Cell from "./Cell";
+
 import nextGeneration from "./golLib.js";
 import "./App.css";
+
+let hasGameYetToStart = true;
+const currentGen = [];
+
+const getCellCoordFromId = function(id) {
+  const rowCellPair = id.split("_");
+  const rowNumber = +rowCellPair[0];
+  const cellNumber = +rowCellPair[1];
+  return [rowNumber, cellNumber];
+};
+
+const Cell = function(props) {
+  // const [cellState, setCellState] = useState(false);
+  const [cellColor, setCellColor] = useState("white");
+
+  //   const toggleState = () => {
+  //     setCellState(!cellState);
+  //     if (cellColor === COLOR.marked) {
+  //       setCellColor(COLOR.unmarked);
+  //     } else {
+  //       setCellColor(COLOR.marked);
+  //     }
+  //   };
+
+  //   CURRENT_BOARD[props.id] = cellState;
+
+  //   console.log(CURRENT_BOARD[props.id]);
+  //   console.log("cell state is ", cellState);
+  //   console.log("cell color is ", cellColor);
+  //   console.log(CURRENT_BOARD);
+
+  const toggleState = function() {
+    if (!hasGameYetToStart) return;
+    console.log("******");
+
+    COLOURS_OF_CELLS[props.id] === "white"
+      ? (COLOURS_OF_CELLS[props.id] = "black")
+      : (COLOURS_OF_CELLS[props.id] = "white");
+
+    cellColor === "white" ? setCellColor("black") : setCellColor("white");
+    const id = getCellCoordFromId(props.id);
+    currentGen.push(id);
+  };
+
+  let backgroundColor;
+  if (hasGameYetToStart) {
+    backgroundColor = cellColor;
+  } else {
+    backgroundColor = props.color;
+  }
+
+  return (
+    <div
+      id={props.id}
+      className="cell"
+      style={{ background: backgroundColor}}
+      onClick={toggleState}
+    />
+  );
+};
 
 const Row = function(props) {
   const result = [];
@@ -43,8 +103,9 @@ const updateColorOfCells = function(cells) {
 };
 
 const App = function(props) {
-  const [gen, setGen] = useState(props.gen);
+  const [gen, setGen] = useState(currentGen);
   const updateGen = function() {
+    console.log("updating gen");
     const nextGen = nextGeneration(gen, props.bounds);
     setGen(nextGen);
   };
@@ -54,8 +115,13 @@ const App = function(props) {
     updateColorOfCells(gen);
   };
 
+  const tearDown = () => {
+    hasGameYetToStart = false;
+  };
+
   const runOnChange = function() {
     setUp(gen);
+    return () => tearDown();
   };
 
   useEffect(runOnChange);
