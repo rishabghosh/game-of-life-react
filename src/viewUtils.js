@@ -21,4 +21,13 @@ const getLiveCellIDs = function(currentGen) {
   return currentGen.map(genId);
 };
 
-export { getIndex, getCellCoordFromId, getLiveCellIDs };
+const getRows = function(bound) {
+  return bound.bottomRight[0] - bound.topLeft[0];
+};
+
+const getCellsPerRow = function(bound) {
+  return bound.bottomRight[1] - bound.topLeft[1];
+};
+
+
+export { getIndex, getCellCoordFromId, getLiveCellIDs, getCellsPerRow, getRows };
