@@ -17,7 +17,6 @@ const App = function(props) {
   const [hasStarted, setHasStarted] = useState(false);
   const [hasPaused, setHasPaused] = useState(false);
   const [buttonText, setButtonText] = useState(LABEL.start);
-  // let buttonText = LABEL.start;
 
   const runOnChange = function() {
     let intervalId;
