@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {INITIAL_GEN, Cell} from "./Cell"
+import {getLiveCellIDs} from "./viewUtils"
 import nextGeneration from "./golLib.js";
 import "./App.css";
 
-const genId = cell => cell[0] + "_" + cell[1];
 
 const Row = function(props) {
   const result = [];
@@ -34,9 +34,7 @@ const Table = function(props) {
   return <div className="table">{result}</div>;
 };
 
-const getLiveCellIDs = function(currentGen) {
-  return currentGen.map(genId);
-};
+
 
 const App = function(props) {
   const [gen, setGen] = useState(INITIAL_GEN);

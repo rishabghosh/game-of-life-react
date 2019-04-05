@@ -1,24 +1,9 @@
 import React, { useState } from "react";
+import { getCellCoordFromId, getIndex } from "./viewUtils";
+
 
 const INITIAL_GEN = [];
 const COLOURS = { marked: "black", unmarked: "white" };
-
-const getIndex = function(_2dArray, cell) {
-  for (let index = 0; index < _2dArray.length; index++) {
-    const subArr = _2dArray[index];
-    if (subArr[0] === cell[0] && subArr[1] === cell[1]) {
-      return index;
-    }
-  }
-  return -1;
-};
-
-const getCellCoordFromId = function(id) {
-  const rowCellPair = id.split("_");
-  const rowNumber = +rowCellPair[0];
-  const cellNumber = +rowCellPair[1];
-  return [rowNumber, cellNumber];
-};
 
 const Cell = function(props) {
   const [isAlive, setIsAlive] = useState(false);
