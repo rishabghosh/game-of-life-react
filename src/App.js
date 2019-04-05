@@ -4,7 +4,6 @@ import nextGeneration from "./golLib.js";
 import "./App.css";
 
 const INITIAL_GEN = [];
-const COLOURS_OF_CELLS = {};
 const COLOURS = { marked: "black", unmarked: "white" };
 
 const genId = cell => cell[0] + "_" + cell[1];
@@ -50,7 +49,6 @@ const Row = function(props) {
     result.push(
       <Cell
         id={ID}
-        color={COLOURS_OF_CELLS[ID]}
         hasStarted={props.hasStarted}
         isAlive={props.liveCellIDs.includes(ID)}
       />
@@ -73,34 +71,8 @@ const Table = function(props) {
   return <div className="table">{result}</div>;
 };
 
-const fillColourOfCells = function(bounds) {
-  const rows = bounds.bottomRight[0] - bounds.topLeft[0];
-  const cellsPerRow = bounds.bottomRight[1] - bounds.topLeft[1];
-  for (let i = 0; i <= rows; i++) {
-    for (let j = 0; j <= cellsPerRow; j++) {
-      const id = genId([i, j]);
-      COLOURS_OF_CELLS[id] = COLOURS.unmarked;
-    }
-  }
-};
-
-const updateColorOfCells = function(cells) {
-  for (let index = 0; index < cells.length; index++) {
-    const cell = cells[index];
-    const id = genId(cell);
-    COLOURS_OF_CELLS[id] = COLOURS.marked;
-  }
-};
-
-const resetColorOfCells = function() {
-  const allIds = Object.keys(COLOURS_OF_CELLS);
-  allIds.forEach(id => {
-    COLOURS_OF_CELLS[id] = COLOURS.unmarked;
-  });
-};
-
 const getLiveCellIDs = function(currentGen) {
-  return currentGen.map(gen => gen[0] + "_" + gen[1]);
+  return currentGen.map(genId);
 };
 
 const App = function(props) {
@@ -108,34 +80,19 @@ const App = function(props) {
   const [hasStarted, setHasStarted] = useState(false);
 
   const runOnChange = function() {
-    console.log("running", hasStarted);
-
     let intervalId;
     if (hasStarted) {
       intervalId = setInterval(() => {
-        console.log("getting invoked");
         setGen(prevGen => nextGeneration(prevGen, props.bounds));
       }, 500);
     }
 
     return () => {
-      console.log("interval got cleared", hasStarted);
       clearInterval(intervalId);
     };
   };
 
-  useEffect(() => {
-    if (!hasStarted) fillColourOfCells(props.bounds);
-  });
-
   useEffect(runOnChange, [hasStarted]);
-
-  useEffect(() => {
-    updateColorOfCells(gen);
-    return () => {
-      resetColorOfCells();
-    };
-  });
 
   const start = function() {
     setHasStarted(true);
