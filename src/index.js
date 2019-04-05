@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
-const BOUNDS = { topLeft: [0, 0], bottomRight: [9, 9] };
+const BOUNDS = { topLeft: [0, 0], bottomRight: [12, 10] };
 
 ReactDOM.render(
   <App bounds={BOUNDS} />,
