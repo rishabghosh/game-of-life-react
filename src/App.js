@@ -10,15 +10,18 @@ import nextGeneration from "./golLib.js";
 
 import "./App.css";
 
-
+const LABEL = { start: "Start", pause: "Pause", resume: "Resume" };
 
 const App = function(props) {
   const [gen, setGen] = useState(INITIAL_GEN);
   const [hasStarted, setHasStarted] = useState(false);
+  const [hasPaused, setHasPaused] = useState(false);
+  const [buttonText, setButtonText] = useState(LABEL.start);
+  // let buttonText = LABEL.start;
 
   const runOnChange = function() {
     let intervalId;
-    if (hasStarted) {
+    if (hasStarted && !hasPaused) {
       intervalId = setInterval(() => {
         setGen(prevGen => nextGeneration(prevGen, props.bounds));
       }, 500);
@@ -29,10 +32,14 @@ const App = function(props) {
     };
   };
 
-  useEffect(runOnChange, [hasStarted]);
+  useEffect(runOnChange, [hasStarted, hasPaused]);
 
   const start = function() {
-    setHasStarted(true);
+    hasStarted && !hasPaused
+      ? setButtonText(LABEL.resume)
+      : setButtonText(LABEL.pause);
+    hasStarted ? setHasPaused(!hasPaused) : setHasStarted(true);
+    console.log(hasPaused);
   };
 
   return (
@@ -43,7 +50,7 @@ const App = function(props) {
         rows={getRows(props.bounds)}
         cellsPerRow={getCellsPerRow(props.bounds)}
       />
-      <button onClick={start}>Start</button>
+      <button onClick={start}>{buttonText}</button>
     </main>
   );
 };
