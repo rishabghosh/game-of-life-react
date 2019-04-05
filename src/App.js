@@ -6,6 +6,7 @@ import "./App.css";
 const INITIAL_GEN = [];
 const COLOURS_OF_CELLS = {};
 const COLOURS = { marked: "black", unmarked: "white" };
+
 const genId = cell => cell[0] + "_" + cell[1];
 
 const getCellCoordFromId = function(id) {
@@ -16,26 +17,20 @@ const getCellCoordFromId = function(id) {
 };
 
 const Cell = function(props) {
-  const [cellColor, setCellColor] = useState(COLOURS.unmarked);
+  const [isAlive, setIsAlive] = useState(false);
 
   const toggleState = function() {
     if (props.hasStarted) return;
-
-    COLOURS_OF_CELLS[props.id] === COLOURS.unmarked
-      ? (COLOURS_OF_CELLS[props.id] = COLOURS.marked)
-      : (COLOURS_OF_CELLS[props.id] = COLOURS.unmarked);
-
-    cellColor === COLOURS.unmarked
-      ? setCellColor(COLOURS.marked)
-      : setCellColor(COLOURS.unmarked);
+    setIsAlive(!isAlive);
     const id = getCellCoordFromId(props.id);
     INITIAL_GEN.push(id);
   };
 
-  let backgroundColor = props.color;
-  if (!props.hasStarted) {
-    backgroundColor = cellColor;
+  if (props.hasStarted && isAlive !== props.isAlive) {
+    setIsAlive(props.isAlive);
   }
+
+  const backgroundColor = isAlive ? COLOURS.marked : COLOURS.unmarked;
 
   return (
     <div
@@ -49,6 +44,7 @@ const Cell = function(props) {
 
 const Row = function(props) {
   const result = [];
+
   for (let index = 0; index < 10; index++) {
     const ID = props.id + "_" + index;
     result.push(
@@ -56,6 +52,7 @@ const Row = function(props) {
         id={ID}
         color={COLOURS_OF_CELLS[ID]}
         hasStarted={props.hasStarted}
+        isAlive={props.liveCellIDs.includes(ID)}
       />
     );
   }
@@ -65,7 +62,13 @@ const Row = function(props) {
 const Table = function(props) {
   const result = [];
   for (let index = 0; index < 10; index++) {
-    result.push(<Row id={index} hasStarted={props.hasStarted} />);
+    result.push(
+      <Row
+        id={index}
+        hasStarted={props.hasStarted}
+        liveCellIDs={props.liveCellIDs}
+      />
+    );
   }
   return <div className="table">{result}</div>;
 };
@@ -94,6 +97,10 @@ const resetColorOfCells = function() {
   allIds.forEach(id => {
     COLOURS_OF_CELLS[id] = COLOURS.unmarked;
   });
+};
+
+const getLiveCellIDs = function(currentGen) {
+  return currentGen.map(gen => gen[0] + "_" + gen[1]);
 };
 
 const App = function(props) {
@@ -136,7 +143,7 @@ const App = function(props) {
 
   return (
     <main>
-      <Table hasStarted={hasStarted} />
+      <Table hasStarted={hasStarted} liveCellIDs={getLiveCellIDs(gen)} />
       <button onClick={start}>Start</button>
     </main>
   );
